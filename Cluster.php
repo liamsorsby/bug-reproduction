@@ -32,6 +32,8 @@ try {
     //start test
     echo "Testing!".PHP_EOL;
     $obj_cluster = new RedisCluster(null, $hosts, 5, 5, $usePersistence);
+    $time = microtime(true);
+    $i = 0;
     while (true) {
         try {
             $key = rand(0, 127);
@@ -50,6 +52,14 @@ try {
         } catch (Exception $e) {
             //echo 'Caught exception: ', $e->getMessage(), "\n";
             //echo "skipped".PHP_EOL;
+        }
+        $end_time = microtime(true);
+        if ($end_time - $time > 1.00) { // 1 seconds
+            echo "Number of iterations over 1 seconds: ".$i.PHP_EOL;
+            $i = 0;
+            $time = microtime(true);
+        } else {
+            $i++;
         }
         //
     }
