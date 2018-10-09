@@ -1,0 +1,66 @@
+version: '3.5'
+services:
+    trib:
+        # Short lived container to configure the Redis cluster (3 masters, 3 slaves)
+        image: sgrio/redis-trib
+        entrypoint: sh -c "echo yes | /redis-trib.rb create --replicas 1 10.0.0.3:6379 10.0.0.4:6379 10.0.0.5:6379 10.0.06:6379 10.0.0.7:6379 10.0.0.8:6379 "
+        depends_on: [redis_1, redis_2, redis_3, redis_4, redis_5, redis_6]
+
+    breaker:
+        image: sgrio/redis-trib
+        entrypoint: sh -c "while true; do /redis-trib.rb call redis_1:6379 cluster failover; done"
+        depends_on: [redis_1, redis_2, redis_3, redis_4, redis_5, redis_6]
+
+    redis_1:
+        image: redis:3.2.7-alpine
+        command: redis-server --cluster-enabled yes --cluster-node-timeout 5000 --appendonly yes
+        networks:
+            default:
+                ipv4_address: 10.0.0.3
+
+    redis_2:
+        image: redis:3.2.7-alpine
+        command: redis-server --cluster-enabled yes --cluster-node-timeout 5000 --appendonly yes
+        networks:
+            default:
+                ipv4_address: 10.0.0.4
+
+    redis_3:
+        image: redis:3.2.7-alpine
+        command: redis-server --cluster-enabled yes --cluster-node-timeout 5000 --appendonly yes
+        networks:
+            default:
+                ipv4_address: 10.0.0.5
+
+    redis_4:
+        image: redis:3.2.7-alpine
+        command: redis-server --cluster-enabled yes --cluster-node-timeout 5000 --appendonly yes
+        networks:
+            default:
+                ipv4_address: 10.0.0.6
+
+    redis_5:
+        image: redis:3.2.7-alpine
+        command: redis-server --cluster-enabled yes --cluster-node-timeout 5000 --appendonly yes
+        networks:
+            default:
+                ipv4_address: 10.0.0.7
+
+    redis_6:
+        image: redis:3.2.7-alpine
+        command: redis-server --cluster-enabled yes --cluster-node-timeout 5000 --appendonly yes
+        networks:
+            default:
+                ipv4_address: 10.0.0.8
+    php:
+        build:
+            context: .
+        volumes:
+            - .:/var/www/html
+networks:
+    default:
+        # Bridge mode required for Redis cluster
+        driver: bridge
+        ipam:
+            config:
+            -   subnet: 10.0.0.0/16
