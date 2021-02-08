@@ -1,4 +1,4 @@
-FROM php:8.0.1-apache
+FROM php:8.0.2-apache
 
 RUN apt-get update && apt-get -y install autoconf git unzip
 
